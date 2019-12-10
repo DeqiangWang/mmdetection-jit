@@ -4,6 +4,8 @@ import cv2,os
 import torch
 import torch.onnx as torch_onnx
 from mmdet.apis import inference_detector, init_detector, show_result,inference_data
+from mmdet.models import build_backbone,build_neck
+import mmcv
 
 root = os.getcwd()
  
@@ -22,29 +24,16 @@ def parse_args():
 
 def main():
     args = parse_args()
-
-    model = init_detector(
-        os.path.join(root,args.config) , None, device=torch.device('cuda', args.device))
-    
-  
-    img = cv2.imread(os.path.join(root,'demo/demo.jpg'))
-    data = inference_data(model,img)
-     
-    with torch.no_grad():
-        jitted = torch.jit.script(model(return_loss=False,**data))
-
-        
-    # exit()
  
-    # for i in range(1,11):
+    config = mmcv.Config.fromfile( os.path.join(root,args.config))
+    #data = torch.randn(1,3,800,800) 
+    
+    with torch.no_grad():
+        backbone = build_backbone(config.model.backbone) 
+    backbone.eval()
      
-    #     img = cv2.imread(os.path.join(root,'demo','{}.jpg'.format(i)))
-         
-    #     result = inference_detector(model, img)
-
-      
-    #     show_result(
-    #         img, result, model.CLASSES, score_thr=args.score_thr, wait_time=0)
+    backbone.save('./backbone.pt')
+    
 
 
 if __name__ == '__main__':
