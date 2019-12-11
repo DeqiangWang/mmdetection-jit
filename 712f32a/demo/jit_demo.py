@@ -4,7 +4,7 @@ import cv2,os
 import torch
 import torch.onnx as torch_onnx
 from mmdet.apis import inference_detector, init_detector, show_result,inference_data
-from mmdet.models import build_backbone,build_neck
+from mmdet.models import build_backbone,build_neck,build_head
 import mmcv
 
 root = os.getcwd()
@@ -24,17 +24,21 @@ def parse_args():
 
 def main():
     args = parse_args()
- 
+
     config = mmcv.Config.fromfile( os.path.join(root,args.config))
-    #data = torch.randn(1,3,800,800) 
+    data = torch.randn(1,3,800,800) 
     
     with torch.no_grad():
         backbone = build_backbone(config.model.backbone) 
+        neck = build_neck(config.model.neck)
+        rpn_head = build_head(config.model.rpn_head)
+
     backbone.eval()
+    neck.eval()
+    rpn_head.eval()
+   
+    #torch.jit.save(rpn_head,'./rpn_head.pt')
+    exit()
      
-    backbone.save('./backbone.pt')
-    
-
-
 if __name__ == '__main__':
     main()
